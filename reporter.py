@@ -10,10 +10,7 @@ import torch
 import time
 
 class Clf_Reporter(object):
-    """用于分类模型的预测结果评估器;"""
-    def __init__(self):
-        pass
-    
+    """用于分类模型的预测结果评估器;"""    
     def clf_report(self, y_test, y_pred):
         """分类报告;
         只能用于分类任务,
