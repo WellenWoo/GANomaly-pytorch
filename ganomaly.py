@@ -290,6 +290,7 @@ class Ganomaly4loader(Ganomaly):
                 self.save_weight(self.netg, self.netd, 
                                  "epoch{n}netg.pth".format(n = epoch), 
                                  "epoch{n}netd.pth".format(n = epoch))
+            torch.cuda.empty_cache()
         print(">> Training model Gan.[Done]" ) 
     
     def train_epoch(self, train_loader, epoch, niter):
@@ -321,11 +322,13 @@ class Ganomaly4loader(Ganomaly):
         """
 #        self.netg.eval()
         with torch.no_grad():
-            #此处有bug,设置tensor的size为len(X_test.dataset)时,
-            #dataloader加载图片时必须将选项drop_last设为False,
-            #否则实际预测的数据个数与装载预测数据的数组大小不匹配,
-            pred = torch.zeros(size = (len(test_loader.dataset), ), dtype = torch.float32, device = self.device)
-            labels = torch.zeros(size = (len(test_loader.dataset), ) , dtype = torch.long, device = self.device)
+            batch_size = test_loader.batch_size
+            nsample = len(test_loader.dataset.imgs)
+            if test_loader.drop_last:
+                nsample = nsample - nsample % batch_size
+                
+            pred = torch.zeros(size = (nsample, ), dtype = torch.float32, device = self.device)
+            labels = torch.zeros(size = (nsample, ) , dtype = torch.long, device = self.device)
             
             for i, loader in enumerate(test_loader, 0):
                 x_data, y_data = self.unpack_loader(loader)
